@@ -43,7 +43,7 @@ var afterFilter = function(envelope){
 
 var bus = Bus.initialize(function (config) {
     config.queue = "rmessagebus.stomp.filters.consumer";
-    config.url = "http://lonappdev04:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
+    config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
     config.beforeConsumingFilters = [beforeFilter];
     config.afterConsumingFilters = [afterFilter];
     config.handlers = {

@@ -19,7 +19,7 @@ var sendMessages = function () {
 
 var bus = Bus.initialize(function (config) {
     config.queue = "rmessagebus.stomp.competingconsumers.sender";
-    config.url = "http://lonappdev04:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
+    config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
   
     config.queueMappings = {  // Destination to send messages to.  
         "Message1": "rmessagebus.stomp.competingconsumers.consumer",

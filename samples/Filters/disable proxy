@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Control Panel]
+"Connection Settings"=dword:00000000
+"Connwiz Admin Lock"=dword:00000000
+"Autoconfig"=dword:00000000
+"Proxy"=dword:00000000
+"ConnectionsTab"=dword:00000000
