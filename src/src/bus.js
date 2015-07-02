@@ -16,7 +16,6 @@
                 queue: "r.messagebus.stomp",
                 errorQueue: "errors",
                 auditQueue: "audit",
-                heartbeatQueue: "heartbeat",
                 auditingEnabled: false,
                 url: "http://localhost:15674/stomp",
                 username: "guest",
@@ -63,25 +62,36 @@
             var consumeMessageEvent = function(message, routingKey, headers) {
                 var result = {
                     success: true
-                };
-
-                var context = {
-                    bus: this,
-                    headers: headers
-                };
+                };                
 
                 try {
-                    processFilters(configuration.beforeConsumingFilters, {
-                        headers: headers,
-                        body: message
-                    });
+                    if (configuration.beforeConsumingFilters && configuration.beforeConsumingFilters.length > 0){
+                        var envelope = {
+                            headers: headers,
+                            body: message
+                        };
+                        if (processFilters(configuration.beforeConsumingFilters, envelope)) {
+                            return result;
+                        }
+                        headers = envelope.headers;
+                        message = envelope.body;
+                    }            
+
+                    var context = {
+                        bus: this,
+                        headers: headers
+                    };        
 
                     processMessageHandlers(message, routingKey, context);
 
-                    processFilters(configuration.afterConsumingFilters, {
-                        headers: headers,
-                        body: message
-                    });
+                    if (configuration.afterConsumingFilters && configuration.afterConsumingFilters.length > 0){
+                        if (processFilters(configuration.afterConsumingFilters, {
+                            headers: headers,
+                            body: message
+                        })) {
+                            return result;
+                        }
+                    } 
                 } catch (e) {
                     if (configuration.exceptionCallback) {
                         configuration.exceptionCallback(e);
@@ -162,12 +172,15 @@
                 };
 
                 if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
-                    if (processFilters(configuration.OutgoingFilters, {
+                    var envelope = {
                         headers: headers,
                         body: message
-                    })) {
+                    };
+                    if (processFilters(configuration.outgoingFilters, envelope)) {
                         return;
                     }
+                    headers = envelope.headers;
+                    message = envelope.body;
                 }
 
                 if (endpoints) {
@@ -179,8 +192,6 @@
                 }
             };
 
-
-
             var publish = function(routingKey, message, headers) {
                 headers = headers || {};
 
@@ -189,12 +200,15 @@
                 };
 
                 if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
-                    if (processFilters(configuration.OutgoingFilters, {
+                    var envelope = {
                         headers: headers,
                         body: message
-                    })) {
+                    };
+                    if (processFilters(configuration.outgoingFilters, envelope)) {
                         return;
                     }
+                    headers = envelope.headers;
+                    message = envelope.body;
                 }
 
                 producer.publish(routingKey, message, headers);

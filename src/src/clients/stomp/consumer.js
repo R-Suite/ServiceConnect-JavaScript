@@ -48,8 +48,21 @@
                 if (configuration.auditingEnabled) {
                     client.send('/amq/queue/' + configuration.auditQueue, headers, JSON.stringify(message));
                 }
-            } else {
+            } else if (!configuration.disableErrors) {
                 // Retries not supported just forward to error queue
+                if (result.exception) {
+                    var exceptionString = result.exception.constructor === Object || result.exception === Array ? JSON.stringify(result.exception) : result.exception;
+
+                    headers.Exception = JSON.stringify({
+                        TimeStamp: Date.Now,
+                        ExceptionType: "JavaScript",
+                        Message: exceptionString,
+                        StackTrace: "",
+                        Source: "",
+                        Exception: exceptionString
+                    });
+                }
+                client.send('/amq/queue/' + configuration.errorQueue, headers, JSON.stringify(message));
             }
         };
 
