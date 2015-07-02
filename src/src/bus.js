@@ -59,6 +59,7 @@
                 producer = Producer(configuration, onProducerConnect),
                 consumer = Consumer(configuration, startConsuming);
 
+
             var consumeMessageEvent = function(message, routingKey, headers) {
                 var result = {
                     success: true
@@ -79,10 +80,18 @@
 
                     var context = {
                         bus: this,
-                        headers: headers
+                        headers: headers,
+                        reply: function(replyMessage, replyRoutingKey) {
+                            if (headers.RequestMessageId) {
+                                send(headers.SourceAddress, replyRoutingKey, replyMessage, {
+                                    ResponseMessageId: headers.RequestMessageId
+                                });
+                            }
+                        }
                     };        
 
                     processMessageHandlers(message, routingKey, context);
+                    processRequestReplyConfigurations(message, routingKey, context);
 
                     if (configuration.afterConsumingFilters && configuration.afterConsumingFilters.length > 0){
                         if (processFilters(configuration.afterConsumingFilters, {
@@ -120,6 +129,17 @@
                 if (handler) {
                     handler(message, context);
                 };
+            };
+
+            var processRequestReplyConfigurations = function (message, routingKey, context) {
+                if (context.headers.ResponseMessageId) {
+                    var request = requestConfigurations[context.headers.ResponseMessageId];
+                    request.callback(message);
+
+                    if (request.processedCount >= request.endpointsCount) {
+                        delete requestConfigurations[context.headers.ResponseMessageId];
+                    }
+                }
             };
 
             var generateGuid = function() {
@@ -214,9 +234,111 @@
                 producer.publish(routingKey, message, headers);
             };
 
+            var requestConfigurations = {};
+
+            var isFunction = function (functionToCheck) {
+                var getType = {};
+                return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+            };
+
+            var sendRequest = function () {
+                var routingKey,
+                    message,
+                    endpoints,
+                    headers = {},
+                    callback;
+
+                if (arguments.length === 3) {
+                    routingKey = arguments[0];
+                    message = arguments[1];
+                    callback = arguments[2];
+                } else if (arguments.length === 4) {
+                    if (isFunction(arguments[3])) {
+                        if (arguments[0] instanceof Array) {
+                            endpoints = arguments[0];
+                        } else {
+                            endpoints = [arguments[0]];
+                        }
+                        routingKey = arguments[1];
+                        message = arguments[2];
+                        callback = arguments[3];
+                    } else {
+                        routingKey = arguments[0];
+                        message = arguments[1];
+                        callback = arguments[2];
+                        headers = arguments[3];
+                    }
+                } else if (arguments.length === 5) {
+                    if (arguments[0] instanceof Array) {
+                        endpoints = arguments[0];
+                        routingKey = arguments[1];
+                        message = arguments[2];
+                        callback = arguments[3];
+                        headers = arguments[4];
+                    } else {
+                        endpoints = [arguments[0]];
+                        routingKey = arguments[1];
+                        message = arguments[2];
+                        callback = arguments[3];
+                        headers = arguments[4];
+                    }
+                }
+
+                if (!message.CorrelationId) {
+                    message.CorrelationId = generateGuid();
+                }
+
+                headers = headers || {};
+                var messageId = generateGuid();
+
+                var endpointsCount = !endpoints ? 0 : endpoints.length;
+
+                var responses = [];
+                var request = {
+                    messageId: messageId,
+                    processedCount: 0,
+                    endpointsCount: endpointsCount,
+                    callback: function(response) {
+                        responses.push(response);
+                        request.processedCount++;
+                        if (request.processedCount >= endpointsCount) {
+                            if (responses.length === 1 && endpointsCount <= 1) {
+                                callback(responses[0]);
+                            } else {
+                                callback(responses);
+                            }
+                        }
+                    }
+                };
+
+                requestConfigurations[messageId] = request;
+                headers.RequestMessageId = messageId;
+
+                if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
+                    var envelope = {
+                        headers: headers,
+                        body: message
+                    };
+                    if (processFilters(configuration.outgoingFilters, envelope)) {
+                        return;
+                    }
+                    headers = envelope.headers;
+                    message = envelope.body;
+                }
+
+                if (endpoints) {
+                    for (var i = 0; i < endpoints.length; i++) {
+                        producer.send(endpoints[i], routingKey, message, headers);
+                    }
+                } else {
+                    producer.send(routingKey, message, headers);
+                }
+            };
+
             return {
                 send: send,
-                publish: publish
+                publish: publish,
+                sendRequest: sendRequest
             };
         };
 
