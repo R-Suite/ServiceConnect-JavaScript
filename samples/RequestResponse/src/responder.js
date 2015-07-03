@@ -8,12 +8,12 @@ var message1Handler = function(message, context) {
     context.reply({
         message: {
             Data: "Response Message"
-        }, 
+        },
         routingKey: "ResponseMessage"
     });
 };
 
-var bus = Bus.initialize(function (config) {
+var bus = Bus.initialize(function(config) {
     config.queue = "rmessagebus.stomp.requestresponse.responder";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 

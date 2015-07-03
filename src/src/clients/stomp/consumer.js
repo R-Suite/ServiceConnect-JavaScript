@@ -1,22 +1,22 @@
-(function (factory) {
+(function(factory) {
     "use strict";
     if (typeof define === "function" && define.amd) {
         define(["SockJS", "Stomp"], factory);
     } else {
         factory(window.SockJS, window.Stomp);
     }
-}(function (SockJS, Stomp) {
+}(function(SockJS, Stomp) {
 
     "use strict";
 
-    var consumer = function (options, callback) {
+    var consumer = function(options, callback) {
 
         var configuration = options;
 
         var ws = new SockJS(options.url);
         var client = Stomp.over(ws);
 
-        var onConnectError = function () {
+        var onConnectError = function() {
             console.error("Connection failed.");
         };
 
@@ -33,7 +33,7 @@
 
         var processMessageCallback;
 
-        var processMessage = function (m) {
+        var processMessage = function(m) {
             var message = JSON.parse(m.body);
             var headers = m.headers;
             headers.TimeReceived = Date.now;
@@ -43,7 +43,7 @@
             var result = processMessageCallback({
                 message: message,
                 headers: headers,
-                routingKey: headers["FullTypeName"]
+                routingKey: headers.FullTypeName
             });
 
             headers.TimeProcessed = Date.now;
@@ -69,12 +69,12 @@
             }
         };
 
-        var startConsuming = function (messageEvent) {
+        var startConsuming = function(messageEvent) {
             processMessageCallback = messageEvent;
             client.subscribe('/queue/' + configuration.queue, processMessage);
         };
 
-        var consumeMessageType = function (routingKey) {
+        var consumeMessageType = function(routingKey) {
             if (routingKey.constructor === Object) {
                 client.subscribe('/' + (routingKey.type || "topic") + '/' + routingKey.routingKey, processMessage);
             } else {

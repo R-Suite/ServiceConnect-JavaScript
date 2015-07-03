@@ -7,16 +7,20 @@
         pkg: grunt.file.readJSON('package.json'),
         
         jsbeautifier: {
-            files: ["src/**"],
+            files: ["src/**/*.js", "samples/**/*.js", "!src/bower_components/**"],
             options: {}
         },
 
+        jshint: {
+            files: ["src/**/*.js", "samples/**/*.js", "!src/bower_components/**"]
+        },
+
         watch: {
-            files: ["src/**"],
+            files: ["src/**", "samples/**"],
             tasks: ['default']
         }
     });
    
-    grunt.registerTask('default', ['jsbeautifier']);
+    grunt.registerTask('default', ['jsbeautifier', 'jshint']);
 
 };

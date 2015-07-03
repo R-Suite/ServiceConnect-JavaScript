@@ -1,22 +1,22 @@
-(function (factory) {
+(function(factory) {
     "use strict";
     if (typeof define === "function" && define.amd) {
         define(["SockJS", "Stomp"], factory);
     } else {
         factory(window.SockJS, window.Stomp);
     }
-}(function (SockJS, Stomp) {
+}(function(SockJS, Stomp) {
 
     "use strict";
 
-    var producer = function (options, callback) {
+    var producer = function(options, callback) {
 
         var configuration = options;
 
         var ws = new SockJS(options.url);
         var client = Stomp.over(ws);
 
-        var onConnectError = function () {
+        var onConnectError = function() {
             console.error("Connection failed.");
         };
 
@@ -31,7 +31,7 @@
         client.heartbeat.outgoing = 0;
         client.heartbeat.incoming = 0;
 
-        var getHeaders = function (type, headers, queueName, messageType) {
+        var getHeaders = function(type, headers, queueName, messageType) {
             if (!headers) {
                 headers = {};
             }
@@ -58,30 +58,30 @@
             return headers;
         };
 
-        var generateGuid = function () {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var generateGuid = function() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0,
                     v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         };
 
-        var publish = function (args) {
+        var publish = function(args) {
             var headers = getHeaders(args.routingKey, args.headers, configuration.queue, "Publish");
             if (args.type && args.type === "exchange") {
                 client.send('/exchange/' + args.exchange, headers, JSON.stringify(args.message));
             } else {
                 client.send('/topic/' + args.routingKey, headers, JSON.stringify(args.message));
-            }            
+            }
         };
 
-        var send = function (args) {
+        var send = function(args) {
             var endpoints = args.endpoints || configuration.queueMappings[args.routingKey];
 
-            for(var i = 0; i <= endpoints.length; i++){
+            for (var i = 0; i <= endpoints.length; i++) {
                 var headers = getHeaders(args.routingKey, args.headers, endpoints[i], "Send");
                 client.send('/amq/queue/' + endpoints[i], headers, JSON.stringify(args.message));
-            }                   
+            }
         };
 
         return {

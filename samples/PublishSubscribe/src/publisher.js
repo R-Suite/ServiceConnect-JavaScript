@@ -1,6 +1,6 @@
 var el = document.getElementById('results');
 
-var publishMessages = function () {
+var publishMessages = function() {
     el.value = el.value + "Publishing Message 1" + "\n\n";
 
     bus.publish({
@@ -14,14 +14,13 @@ var publishMessages = function () {
 
     bus.publish({
         routingKey: "PublishSubscribe.Messages.PublishSubscribeMessage",
-        message: {
-        },
-        type: "exchange"
+        message: {},
+        type: "exchange",
         exchange: "PublishSubscribeMessagesPublishSubscribeMessage"
     });
 };
 
-var bus = Bus.initialize(function (config) {
+var bus = Bus.initialize(function(config) {
     config.queue = "rmessagebus.stomp.publishsubscribe.publisher";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
     config.onConnect = publishMessages;

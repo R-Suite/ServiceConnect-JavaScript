@@ -29,7 +29,7 @@
                 beforeConsumingFilters: [],
                 afterConsumingFilters: [],
                 outgoingFilters: []
-            }
+            };
         };
 
         var init = function(options) {
@@ -56,13 +56,13 @@
                 producerConnected = false,
                 requestConfigurations = {},
                 configuration = options,
-                producer = Producer(configuration, onProducerConnect),
-                consumer = Consumer(configuration, startConsuming);            
+                producer = new Producer(configuration, onProducerConnect),
+                consumer = new Consumer(configuration, startConsuming);
 
             var consumeMessageEvent = function(eventArguments) {
                 var result = {
                     success: true
-                };                
+                };
 
                 try {
                     if (processFilters(configuration.beforeConsumingFilters, eventArguments)) {
@@ -75,16 +75,16 @@
                         reply: function(replyArgs) {
                             if (eventArguments.headers.RequestMessageId) {
                                 send({
-                                    endpoints: [eventArguments.headers.SourceAddress], 
-                                    routingKey: replyArgs.routingKey, 
-                                    message: replyArgs.message, 
+                                    endpoints: [eventArguments.headers.SourceAddress],
+                                    routingKey: replyArgs.routingKey,
+                                    message: replyArgs.message,
                                     headers: {
                                         ResponseMessageId: eventArguments.headers.RequestMessageId
                                     }
                                 });
                             }
                         }
-                    };    
+                    };
 
                     processMessageHandlers(eventArguments.message, eventArguments.routingKey, context);
                     processRequestReplyConfigurations(eventArguments.message, eventArguments.routingKey, context);
@@ -93,21 +93,20 @@
                         return result;
                     }
 
-                    if (eventArguments.headers.RoutingSlip)
-                    {
+                    if (eventArguments.headers.RoutingSlip) {
                         processRoutingSlip(eventArguments.message, eventArguments.routingKey, eventArguments.headers);
                     }
 
                 } catch (e) {
                     if (configuration.exceptionCallback) {
                         configuration.exceptionCallback(e);
-                    };
+                    }
                     result.success = false;
                     result.exception = e;
                 }
 
                 return result;
-            };            
+            };
 
             var processMessageHandlers = function(message, routingKey, context) {
                 var handlers = configuration.handlers[routingKey];
@@ -118,7 +117,7 @@
                 }
             };
 
-            var processRequestReplyConfigurations = function (message, routingKey, context) {
+            var processRequestReplyConfigurations = function(message, routingKey, context) {
                 if (context.headers.ResponseMessageId) {
                     var request = requestConfigurations[context.headers.ResponseMessageId];
                     request.callback(message);
@@ -127,9 +126,9 @@
                         delete requestConfigurations[context.headers.ResponseMessageId];
                     }
                 }
-            };  
+            };
 
-            var processRoutingSlip = function(message, routingKey, headers){
+            var processRoutingSlip = function(message, routingKey, headers) {
                 var routingSlip = JSON.parse(headers.RoutingSlip);
                 if (routingSlip.length > 0) {
                     route({
@@ -138,29 +137,29 @@
                         message: message
                     });
                 }
-            };       
+            };
 
             var send = function(args) {
                 processHeaders(args);
-                
+
                 if (processFilters(configuration.outgoingFilters, args)) {
                     return;
-                }                
+                }
 
                 producer.send(args);
             };
 
             var publish = function(args) {
                 processHeaders(args);
-                
+
                 if (processFilters(configuration.outgoingFilters, args)) {
                     return;
                 }
 
                 producer.publish(args);
-            };            
+            };
 
-            var sendRequest = function (args) {
+            var sendRequest = function(args) {
                 processHeaders(args);
 
                 var messageId = generateGuid();
@@ -170,7 +169,7 @@
 
                 var timeout;
                 if (args.timeout) {
-                    timeout = setInterval(function(){
+                    timeout = setInterval(function() {
                         clearInterval(timeout);
                         args.onResponse(responses);
                     }, args.timeout);
@@ -203,24 +202,24 @@
                     return;
                 }
 
-                producer.send(args);                    
+                producer.send(args);
             };
 
-            var publishRequest = function (args) {
+            var publishRequest = function(args) {
                 processHeaders(args);
 
-                var messageId = generateGuid();              
+                var messageId = generateGuid();
 
                 var responses = [];
 
                 var timeout;
                 if (args.timeout) {
-                    timeout = setInterval(function(){
+                    timeout = setInterval(function() {
                         clearInterval(timeout);
                         args.onResponse(responses);
                     }, args.timeout);
                 }
-                
+
                 var endpointsCount = args.expectedReplies;
                 var request = {
                     messageId: messageId,
@@ -245,17 +244,17 @@
                     return;
                 }
 
-                producer.publish(args);                    
+                producer.publish(args);
             };
 
-            var route = function(args){            
+            var route = function(args) {
                 processHeaders(args);
 
                 args.endpoints = [args.route[0]];
                 args.route.splice(0, 1);
 
                 args.headers.RoutingSlip = JSON.stringify(args.route);
-                
+
                 if (processFilters(configuration.outgoingFilters, args)) {
                     return;
                 }
@@ -273,7 +272,7 @@
                     }
                 }
                 return false;
-            };            
+            };
 
             var generateGuid = function() {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -283,7 +282,7 @@
                 });
             };
 
-            var processHeaders = function (args) {
+            var processHeaders = function(args) {
                 args.headers = args.headers || {};
 
                 if (!args.message.CorrelationId) {

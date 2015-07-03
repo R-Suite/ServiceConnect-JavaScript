@@ -5,7 +5,7 @@ var message1Handler = function(message, context) {
     el.value = el.value + "Recieved Message 1: " + JSON.stringify(message) + "\n\n";
 };
 
-var bus = Bus.initialize(function (config) {
+var bus = Bus.initialize(function(config) {
     config.queue = "rmessagebus.stomp.routingslip.consumer2";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 

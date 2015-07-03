@@ -16,7 +16,7 @@ var message2Handler = function(message, context) {
     el.value = el.value + "Message 2: " + JSON.stringify(message) + "\n\n";
 };
 
-var bus = Bus.initialize(function (config) {
+var bus = Bus.initialize(function(config) {
     config.queue = "rmessagebus.stomp.scattergather.consumer2";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 

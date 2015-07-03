@@ -27,7 +27,7 @@ var message3Handler = function(message, context) {
     });
 };
 
-var bus = Bus.initialize(function (config) {
+var bus = Bus.initialize(function(config) {
     config.queue = "rmessagebus.stomp.recipientlist.consumer1";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 
