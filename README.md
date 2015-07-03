@@ -1,6 +1,6 @@
 # R.MessageBus JavaScript
 
-[![Join the chat at https://gitter.im/R-Suite/R.MessageBus-JavaScript](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/R-Suite/R.MessageBus-JavaScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/R-Suite/R.MessageBus-JavaScript](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/R-Suite/R.MessageBus-JavaScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)   [![bitHound Score](https://www.bithound.io/github/R-Suite/R.MessageBus-JavaScript/badges/score.svg)](https://www.bithound.io/github/R-Suite/R.MessageBus-JavaScript)
 
 A simple, easy to use messaging framework for client side JavaScript.  
 
