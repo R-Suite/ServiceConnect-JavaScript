@@ -32,7 +32,7 @@ Calling ```initialize``` creates an instance of the bus and connects to the queu
 var bus = Bus.initialize(function (config) {
     config.queue = "rmessagebus.stomp.pointtopoint.sender";
     config.url = "http://localhost:15674/stomp";  
-    config.queueMappings = {  // Destination to send messages to.  
+    config.queueMappings = {  
         "Message1": ["rmessagebus.stomp.pointtopoint.consumer",]
     };
     config.onConnect = sendMessages;
