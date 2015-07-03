@@ -68,7 +68,11 @@
 
         var publish = function (args) {
             var headers = getHeaders(args.routingKey, args.headers, configuration.queue, "Publish");
-            client.send('/topic/' + args.routingKey, headers, JSON.stringify(args.message));
+            if (args.type && args.type === "exchange") {
+                client.send('/exchange/' + args.exchange, headers, JSON.stringify(args.message));
+            } else {
+                client.send('/topic/' + args.routingKey, headers, JSON.stringify(args.message));
+            }            
         };
 
         var send = function (args) {

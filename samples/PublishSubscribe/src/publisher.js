@@ -13,10 +13,11 @@ var publishMessages = function () {
     el.value = el.value + "Publishing Message 2" + "\n\n";
 
     bus.publish({
-        routingKey: "Message2",
+        routingKey: "PublishSubscribe.Messages.PublishSubscribeMessage",
         message: {
-            data: "Message 2: Send"
-        }
+        },
+        type: "exchange"
+        exchange: "PublishSubscribeMessagesPublishSubscribeMessage"
     });
 };
 
