@@ -59,7 +59,7 @@ Again, we configure an instance of the bus. This time, however we specify a mess
 ```javascript
 var bus = Bus.initialize(function (config) {
     config.queue = "rmessagebus.stomp.pointtopoint.consumer";
-    config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
+    config.url = "http://localhost:15674/stomp";
 
     config.handlers = {
         "Message1": [message1Handler]
