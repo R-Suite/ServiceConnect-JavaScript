@@ -18,7 +18,7 @@ var sendMessages = function () {
         routingKey: "Message1"
     });
 
-    el.value = el.value + "Sending using recipient list response pattern" + "\n\n";    
+    el.value = el.value + "Sending using recipient list response pattern. Expect 2 response messages." + "\n\n";    
 
      bus.sendRequest({
         message: {
@@ -27,6 +27,18 @@ var sendMessages = function () {
         endpoints: recipientList,
         routingKey: "Message2",
         onResponse: responseHandler
+    });
+
+     el.value = el.value + "Sending using recipient list response pattern. Expect 1 response after timeout." + "\n\n";    
+
+     bus.sendRequest({
+        message: {
+            data: "Message 3: Send"
+        },
+        endpoints: recipientList,
+        routingKey: "Message3",
+        onResponse: responseHandler,
+        timeout: 1000
     });
 };
 

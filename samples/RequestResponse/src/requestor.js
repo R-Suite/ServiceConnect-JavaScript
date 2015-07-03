@@ -2,7 +2,7 @@ var el = document.getElementById('results');
 
 var sendMessages = function () {
 
-    el.value = el.value + "Sending request 1" + "\n\n";
+    el.value = el.value + "Expect response" + "\n\n";
 
     bus.sendRequest({
         routingKey: "Message1",
@@ -12,7 +12,7 @@ var sendMessages = function () {
         onResponse: function(response){
             el.value = el.value + "Response received: " + JSON.stringify(response) + "\n\n";
         }
-    });
+    });    
 };
 
 var bus = Bus.initialize(function (config) {

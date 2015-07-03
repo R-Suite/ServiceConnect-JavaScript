@@ -1,1 +1,1 @@
-# R.MessageBus JavaScript Client
+# R.MessageBus JavaScript

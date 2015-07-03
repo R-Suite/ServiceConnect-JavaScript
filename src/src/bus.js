@@ -167,6 +167,15 @@
                 var endpointsCount = !args.endpoints ? 0 : args.endpoints.length;
 
                 var responses = [];
+
+                var timeout;
+                if (args.timeout) {
+                    timeout = setInterval(function(){
+                        clearInterval(timeout);
+                        args.onResponse(responses);
+                    }, args.timeout);
+                }
+
                 var request = {
                     messageId: messageId,
                     processedCount: 0,
@@ -175,6 +184,9 @@
                         responses.push(response);
                         request.processedCount++;
                         if (request.processedCount >= endpointsCount) {
+                            if (timeout) {
+                                clearInterval(timeout);
+                            }
                             if (responses.length === 1 && endpointsCount <= 1) {
                                 args.onResponse(responses[0]);
                             } else {
@@ -192,6 +204,48 @@
                 }
 
                 producer.send(args);                    
+            };
+
+            var publishRequest = function (args) {
+                processHeaders(args);
+
+                var messageId = generateGuid();              
+
+                var responses = [];
+
+                var timeout;
+                if (args.timeout) {
+                    timeout = setInterval(function(){
+                        clearInterval(timeout);
+                        args.onResponse(responses);
+                    }, args.timeout);
+                }
+                
+                var endpointsCount = args.expectedReplies;
+                var request = {
+                    messageId: messageId,
+                    processedCount: 0,
+                    endpointsCount: args.expectedReplies,
+                    callback: function(response) {
+                        responses.push(response);
+                        request.processedCount++;
+                        if (endpointsCount && request.processedCount >= endpointsCount) {
+                            if (timeout) {
+                                clearInterval(timeout);
+                            }
+                            args.onResponse(responses);
+                        }
+                    }
+                };
+
+                requestConfigurations[messageId] = request;
+                args.headers.RequestMessageId = messageId;
+
+                if (processFilters(configuration.outgoingFilters, args)) {
+                    return;
+                }
+
+                producer.publish(args);                    
             };
 
             var route = function(args){            
@@ -241,7 +295,8 @@
                 route: route,
                 send: send,
                 publish: publish,
-                sendRequest: sendRequest
+                sendRequest: sendRequest,
+                publishRequest: publishRequest
             };
         };
 
