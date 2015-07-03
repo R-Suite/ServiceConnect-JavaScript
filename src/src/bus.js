@@ -290,12 +290,19 @@
                 }
             };
 
+            var destroy = function() {
+                producer.destroy();
+                consumer.destroy();
+                configuration = null;
+            };
+
             return {
                 route: route,
                 send: send,
                 publish: publish,
                 sendRequest: sendRequest,
-                publishRequest: publishRequest
+                publishRequest: publishRequest,
+                destroy: destroy
             };
         };
 

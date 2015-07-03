@@ -84,9 +84,16 @@
             }
         };
 
+        var destroy = function() {
+            client.disconnect(function() {
+                console.log("Disconnected");
+            });
+        };
+
         return {
             publish: publish,
-            send: send
+            send: send,
+            destroy: destroy
         };
     };
 

@@ -82,9 +82,16 @@
             }
         };
 
+        var destroy = function() {
+            client.disconnect(function() {
+                console.log("Disconnected");
+            });
+        };
+
         return {
             startConsuming: startConsuming,
-            consumeMessageType: consumeMessageType
+            consumeMessageType: consumeMessageType,
+            destroy: destroy
         };
     };
 
