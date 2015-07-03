@@ -17,7 +17,7 @@
         var client = Stomp.over(ws);
 
         var onConnectError = function () {
-            console.error("Connecting to RabbitMQ failed.");
+            console.error("Connection failed.");
         };
 
         client.connect(
@@ -49,7 +49,7 @@
             }
 
             headers.SourceAddress = configuration.queue;
-            headers.TimeSent = Date.Now;
+            headers.TimeSent = Date.now;
             headers.SourceMachine = "Browser";
             headers.FullTypeName = type;
             headers.ConsumerType = "RabbitMQ";
@@ -66,32 +66,18 @@
             });
         };
 
-        var publish = function (routingKey, message, headers) {
-            headers = getHeaders(routingKey, headers, configuration.queue, "Publish");
-            client.send('/topic/' + routingKey, headers, JSON.stringify(message));
+        var publish = function (args) {
+            var headers = getHeaders(args.routingKey, args.headers, configuration.queue, "Publish");
+            client.send('/topic/' + args.routingKey, headers, JSON.stringify(args.message));
         };
 
-        var send = function () {
-            var endpoint,
-                routingKey,
-                message,
-                headers;
+        var send = function (args) {
+            var endpoints = args.endpoints || configuration.queueMappings[args.routingKey];
 
-            if (arguments.length === 3) {
-                routingKey = arguments[0];
-                message = arguments[1];
-                headers = arguments[2];
-                endpoint = configuration.queueMappings[routingKey];
-            } else {
-                endpoint = arguments[0];
-                routingKey = arguments[1];
-                message = arguments[2];
-                headers = arguments[3];
-            }
-
-            headers = getHeaders(routingKey, headers, endpoint, "Send");
-
-            client.send('/amq/queue/' + endpoint, headers, JSON.stringify(message));
+            for(var i = 0; i <= endpoints.length; i++){
+                var headers = getHeaders(args.routingKey, args.headers, endpoints[i], "Send");
+                client.send('/amq/queue/' + endpoints[i], headers, JSON.stringify(args.message));
+            }                   
         };
 
         return {

@@ -17,7 +17,7 @@
         var client = Stomp.over(ws);
 
         var onConnectError = function () {
-            console.error("Connecting to RabbitMQ failed.");
+            console.error("Connection failed.");
         };
 
         client.connect(
@@ -36,25 +36,28 @@
         var processMessage = function (m) {
             var message = JSON.parse(m.body);
             var headers = m.headers;
-            headers.TimeReceived = Date.Now;
+            headers.TimeReceived = Date.now;
             headers.DestinationMachine = "Browser";
             headers.DestinationAddress = configuration.queue;
 
-            var result = processMessageCallback(message, headers["FullTypeName"], headers);
+            var result = processMessageCallback({
+                message: message,
+                headers: headers,
+                routingKey: headers["FullTypeName"]
+            });
 
-            headers.TimeProcessed = Date.Now;
+            headers.TimeProcessed = Date.now;
 
             if (result.success) {
                 if (configuration.auditingEnabled) {
                     client.send('/amq/queue/' + configuration.auditQueue, headers, JSON.stringify(message));
                 }
             } else if (!configuration.disableErrors) {
-                // Retries not supported just forward to error queue
                 if (result.exception) {
                     var exceptionString = result.exception.constructor === Object || result.exception === Array ? JSON.stringify(result.exception) : result.exception;
 
                     headers.Exception = JSON.stringify({
-                        TimeStamp: Date.Now,
+                        TimeStamp: Date.now,
                         ExceptionType: "JavaScript",
                         Message: exceptionString,
                         StackTrace: "",

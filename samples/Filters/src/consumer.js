@@ -1,44 +1,31 @@
+var el = document.getElementById('results');
 
 // Context contains bus and headers
 var message1Handler = function(message, context) {
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                               "\n\n" + 
-                                               "Message 1: " + 
-                                               JSON.stringify(message);
+    el.value = el.value + "Message 1: " + JSON.stringify(message) + "\n\n";
     console.log("Message 1: " + message);
 };
 
 var message2Handler = function (message, context) {
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "\n\n" + 
-                                           "Message 2: " + 
-                                           JSON.stringify(message);
+    el.value = el.value + "Message 2: " + JSON.stringify(message) + "\n\n";
     console.log("Message 2: " + message);
 };
 
 var message3Handler = function (message, context) {
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "\n\n" + 
-                                           "Message 3: " + 
-                                           JSON.stringify(message);
+    el.value = el.value + "Message 3: " + JSON.stringify(message) + "\n\n";
     console.log("Message 3: " + message);
 };
 
 var beforeFilter = function(envelope){
-    var body = envelope.body.data;
-    envelope.body.data = envelope.body.data + " (Modified by consumer)";
-
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                   "\n\n" + 
-                                   "Inside beforeFilter - " + JSON.stringify(envelope.body);
+    var body = envelope.message.data;
+    envelope.message.data = envelope.message.data + " (Modified by consumer)";
+    el.value = el.value + "Inside beforeFilter - " + JSON.stringify(envelope.message) + "\n\n";
     
-    return body === "Message 3 (Modified by sender)";
+    return body === "Message 3: Send (Modified by sender)";
 };
 
 var afterFilter = function(envelope){   
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "\n\n" + 
-                                           "Inside afterFilter - " + JSON.stringify(envelope.body);
+    el.value = el.value + "Inside afterFilter - " + JSON.stringify(envelope.message) + "\n\n";
 };
 
 var bus = Bus.initialize(function (config) {
@@ -47,8 +34,8 @@ var bus = Bus.initialize(function (config) {
     config.beforeConsumingFilters = [beforeFilter];
     config.afterConsumingFilters = [afterFilter];
     config.handlers = {
-        "Message1": message1Handler,
-        "Message2": message2Handler,
-        "Message3": message3Handler
+        "Message1": [message1Handler],
+        "Message2": [message2Handler],
+        "Message3": [message3Handler]
     };
 });

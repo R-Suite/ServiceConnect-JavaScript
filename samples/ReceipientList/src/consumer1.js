@@ -1,17 +1,19 @@
+var el = document.getElementById('results');
 
 // Context contains bus and headers
 var message1Handler = function(message, context) {
-    document.getElementById('results').value = document.getElementById('results').value +                                                 
-                                               "Message 1: " + JSON.stringify(message) + "\n\n";
+    el.value = el.value + "Message 1: " + JSON.stringify(message) + "\n\n";
 };
 
 var message2Handler = function(message, context) {
-    document.getElementById('results').value = document.getElementById('results').value +                                                 
-                                               "Message 2: " + JSON.stringify(message) + "\n\n";
+    el.value = el.value + "Message 2: " + JSON.stringify(message) + "\n\n";
 
     context.reply({
-      Data: "Response Message 2"
-    }, "ResponseMessage")
+        message: {
+            Data: "Response Message 2"
+        },
+        routingKey: "ResponseMessage"
+    });
 };
 
 var bus = Bus.initialize(function (config) {
@@ -19,7 +21,7 @@ var bus = Bus.initialize(function (config) {
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 
     config.handlers = {
-        "Message1": message1Handler,
-        "Message2": message2Handler,
+        "Message1": [message1Handler],
+        "Message2": [message2Handler],
     };
 });

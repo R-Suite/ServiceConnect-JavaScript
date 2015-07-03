@@ -34,9 +34,6 @@
 
         var init = function(options) {
 
-            var consumerConnected = false,
-                producerConnected = false;
-
             var startConsuming = function() {
                 consumer.startConsuming(consumeMessageEvent, configuration.queue);
                 for (var i = 0; i < configuration.messageTypes.length; i++) {
@@ -55,80 +52,70 @@
                 }
             };
 
-            var configuration = options,
+            var consumerConnected = false,
+                producerConnected = false,
+                requestConfigurations = {},
+                configuration = options,
                 producer = Producer(configuration, onProducerConnect),
-                consumer = Consumer(configuration, startConsuming);
+                consumer = Consumer(configuration, startConsuming);            
 
-
-            var consumeMessageEvent = function(message, routingKey, headers) {
+            var consumeMessageEvent = function(eventArguments) {
                 var result = {
                     success: true
                 };                
 
                 try {
-                    if (configuration.beforeConsumingFilters && configuration.beforeConsumingFilters.length > 0){
-                        var envelope = {
-                            headers: headers,
-                            body: message
-                        };
-                        if (processFilters(configuration.beforeConsumingFilters, envelope)) {
-                            return result;
-                        }
-                        headers = envelope.headers;
-                        message = envelope.body;
-                    }            
+                    if (processFilters(configuration.beforeConsumingFilters, eventArguments)) {
+                        return result;
+                    }
 
                     var context = {
                         bus: this,
-                        headers: headers,
-                        reply: function(replyMessage, replyRoutingKey) {
-                            if (headers.RequestMessageId) {
-                                send(headers.SourceAddress, replyRoutingKey, replyMessage, {
-                                    ResponseMessageId: headers.RequestMessageId
+                        headers: eventArguments.headers,
+                        reply: function(replyArgs) {
+                            if (eventArguments.headers.RequestMessageId) {
+                                send({
+                                    endpoints: [eventArguments.headers.SourceAddress], 
+                                    routingKey: replyArgs.routingKey, 
+                                    message: replyArgs.message, 
+                                    headers: {
+                                        ResponseMessageId: eventArguments.headers.RequestMessageId
+                                    }
                                 });
                             }
                         }
-                    };        
+                    };    
 
-                    processMessageHandlers(message, routingKey, context);
-                    processRequestReplyConfigurations(message, routingKey, context);
+                    processMessageHandlers(eventArguments.message, eventArguments.routingKey, context);
+                    processRequestReplyConfigurations(eventArguments.message, eventArguments.routingKey, context);
 
-                    if (configuration.afterConsumingFilters && configuration.afterConsumingFilters.length > 0){
-                        if (processFilters(configuration.afterConsumingFilters, {
-                            headers: headers,
-                            body: message
-                        })) {
-                            return result;
-                        }
-                    } 
+                    if (processFilters(configuration.afterConsumingFilters, eventArguments)) {
+                        return result;
+                    }
+
+                    if (eventArguments.headers.RoutingSlip)
+                    {
+                        processRoutingSlip(eventArguments.message, eventArguments.routingKey, eventArguments.headers);
+                    }
+
                 } catch (e) {
                     if (configuration.exceptionCallback) {
                         configuration.exceptionCallback(e);
                     };
                     result.success = false;
-                    result.exception = ex;
+                    result.exception = e;
                 }
 
                 return result;
-            };
-
-            var processFilters = function(filters, envelope) {
-                if (filters) {
-                    for (var i = 0; i < filters.length; i++) {
-                        var stop = filters[i](envelope);
-                        if (stop) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            };
+            };            
 
             var processMessageHandlers = function(message, routingKey, context) {
-                var handler = configuration.handlers[routingKey];
-                if (handler) {
-                    handler(message, context);
-                };
+                var handlers = configuration.handlers[routingKey];
+                if (handlers) {
+                    for (var i = 0; i < handlers.length; i++) {
+                        handlers[i](message, context);
+                    }
+                }
             };
 
             var processRequestReplyConfigurations = function (message, routingKey, context) {
@@ -140,158 +127,44 @@
                         delete requestConfigurations[context.headers.ResponseMessageId];
                     }
                 }
+            };  
+
+            var processRoutingSlip = function(message, routingKey, headers){
+                var routingSlip = JSON.parse(headers.RoutingSlip);
+                if (routingSlip.length > 0) {
+                    route({
+                        route: routingSlip,
+                        routingKey: routingKey,
+                        message: message
+                    });
+                }
+            };       
+
+            var send = function(args) {
+                processHeaders(args);
+                
+                if (processFilters(configuration.outgoingFilters, args)) {
+                    return;
+                }                
+
+                producer.send(args);
             };
 
-            var generateGuid = function() {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0,
-                        v = c == 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
-            };
-
-            var send = function() {
-                var routingKey,
-                    message,
-                    endpoints,
-                    headers = {};
-
-                if (arguments.length === 2) {
-                    routingKey = arguments[0];
-                    message = arguments[1];
-                } else if (arguments.length === 3) {
-                    if (arguments[0] instanceof Array) {
-                        endpoints = arguments[0];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                    } else if (arguments[1].constructor === Object) {
-                        routingKey = arguments[0];
-                        message = arguments[1];
-                        headers = arguments[2];
-                    } else {
-                        endpoints = [arguments[0]];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                    }
-                } else if (arguments.length === 4) {
-                    if (arguments[0] instanceof Array) {
-                        endpoints = arguments[0];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                        headers = arguments[3];
-                    } else {
-                        endpoints = [arguments[0]];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                        headers = arguments[3];
-                    }
+            var publish = function(args) {
+                processHeaders(args);
+                
+                if (processFilters(configuration.outgoingFilters, args)) {
+                    return;
                 }
 
-                if (!message.CorrelationId) {
-                    message.CorrelationId = generateGuid();
-                };
+                producer.publish(args);
+            };            
 
-                if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
-                    var envelope = {
-                        headers: headers,
-                        body: message
-                    };
-                    if (processFilters(configuration.outgoingFilters, envelope)) {
-                        return;
-                    }
-                    headers = envelope.headers;
-                    message = envelope.body;
-                }
+            var sendRequest = function (args) {
+                processHeaders(args);
 
-                if (endpoints) {
-                    for (var i = 0; i < endpoints.length; i++) {
-                        producer.send(endpoints[i], routingKey, message, headers);
-                    }
-                } else {
-                    producer.send(routingKey, message, headers);
-                }
-            };
-
-            var publish = function(routingKey, message, headers) {
-                headers = headers || {};
-
-                if (!message.CorrelationId) {
-                    message.CorrelationId = generateGuid();
-                };
-
-                if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
-                    var envelope = {
-                        headers: headers,
-                        body: message
-                    };
-                    if (processFilters(configuration.outgoingFilters, envelope)) {
-                        return;
-                    }
-                    headers = envelope.headers;
-                    message = envelope.body;
-                }
-
-                producer.publish(routingKey, message, headers);
-            };
-
-            var requestConfigurations = {};
-
-            var isFunction = function (functionToCheck) {
-                var getType = {};
-                return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-            };
-
-            var sendRequest = function () {
-                var routingKey,
-                    message,
-                    endpoints,
-                    headers = {},
-                    callback;
-
-                if (arguments.length === 3) {
-                    routingKey = arguments[0];
-                    message = arguments[1];
-                    callback = arguments[2];
-                } else if (arguments.length === 4) {
-                    if (isFunction(arguments[3])) {
-                        if (arguments[0] instanceof Array) {
-                            endpoints = arguments[0];
-                        } else {
-                            endpoints = [arguments[0]];
-                        }
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                        callback = arguments[3];
-                    } else {
-                        routingKey = arguments[0];
-                        message = arguments[1];
-                        callback = arguments[2];
-                        headers = arguments[3];
-                    }
-                } else if (arguments.length === 5) {
-                    if (arguments[0] instanceof Array) {
-                        endpoints = arguments[0];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                        callback = arguments[3];
-                        headers = arguments[4];
-                    } else {
-                        endpoints = [arguments[0]];
-                        routingKey = arguments[1];
-                        message = arguments[2];
-                        callback = arguments[3];
-                        headers = arguments[4];
-                    }
-                }
-
-                if (!message.CorrelationId) {
-                    message.CorrelationId = generateGuid();
-                }
-
-                headers = headers || {};
                 var messageId = generateGuid();
-
-                var endpointsCount = !endpoints ? 0 : endpoints.length;
+                var endpointsCount = !args.endpoints ? 0 : args.endpoints.length;
 
                 var responses = [];
                 var request = {
@@ -303,39 +176,69 @@
                         request.processedCount++;
                         if (request.processedCount >= endpointsCount) {
                             if (responses.length === 1 && endpointsCount <= 1) {
-                                callback(responses[0]);
+                                args.onResponse(responses[0]);
                             } else {
-                                callback(responses);
+                                args.onResponse(responses);
                             }
                         }
                     }
                 };
 
                 requestConfigurations[messageId] = request;
-                headers.RequestMessageId = messageId;
+                args.headers.RequestMessageId = messageId;
 
-                if (configuration.outgoingFilters && configuration.outgoingFilters.length > 0) {
-                    var envelope = {
-                        headers: headers,
-                        body: message
-                    };
-                    if (processFilters(configuration.outgoingFilters, envelope)) {
-                        return;
-                    }
-                    headers = envelope.headers;
-                    message = envelope.body;
+                if (processFilters(configuration.outgoingFilters, args)) {
+                    return;
                 }
 
-                if (endpoints) {
-                    for (var i = 0; i < endpoints.length; i++) {
-                        producer.send(endpoints[i], routingKey, message, headers);
+                producer.send(args);                    
+            };
+
+            var route = function(args){            
+                processHeaders(args);
+
+                args.endpoints = [args.route[0]];
+                args.route.splice(0, 1);
+
+                args.headers.RoutingSlip = JSON.stringify(args.route);
+                
+                if (processFilters(configuration.outgoingFilters, args)) {
+                    return;
+                }
+
+                producer.send(args);
+            };
+
+            var processFilters = function(filters, args) {
+                if (filters) {
+                    for (var i = 0; i < filters.length; i++) {
+                        var stop = filters[i](args);
+                        if (stop) {
+                            return true;
+                        }
                     }
-                } else {
-                    producer.send(routingKey, message, headers);
+                }
+                return false;
+            };            
+
+            var generateGuid = function() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0,
+                        v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
+
+            var processHeaders = function (args) {
+                args.headers = args.headers || {};
+
+                if (!args.message.CorrelationId) {
+                    args.message.CorrelationId = generateGuid();
                 }
             };
 
             return {
+                route: route,
                 send: send,
                 publish: publish,
                 sendRequest: sendRequest
@@ -350,7 +253,6 @@
             }
         };
     })();
-
 
     window.Bus = bus;
     return bus;

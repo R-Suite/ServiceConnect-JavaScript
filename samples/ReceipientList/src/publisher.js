@@ -1,4 +1,6 @@
 
+var el = document.getElementById('results');
+
 var sendMessages = function () {
 
     var recipientList = [
@@ -6,24 +8,30 @@ var sendMessages = function () {
         "rmessagebus.stomp.recipientlist.consumer2"
     ];
 
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "Sending using recipient list pattern" + "\n\n";    
+    el.value = el.value + "Sending using recipient list pattern" + "\n\n";    
 
-    bus.send(recipientList, "Message1", {
-        data: "Message 1: Send"
+    bus.send({
+        message: {
+            data: "Message 1: Send"
+        },
+        endpoints: recipientList,
+        routingKey: "Message1"
     });
 
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "Sending using recipient list response pattern" + "\n\n";    
+    el.value = el.value + "Sending using recipient list response pattern" + "\n\n";    
 
-    bus.sendRequest(recipientList, "Message2", {
-        data: "Message 2: Send"
-    }, responseHandler);
+     bus.sendRequest({
+        message: {
+            data: "Message 2: Send"
+        },
+        endpoints: recipientList,
+        routingKey: "Message2",
+        onResponse: responseHandler
+    });
 };
 
 var responseHandler = function(message){
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "Received response: " + JSON.stringify(message) + "\n\n";
+    el.value = el.value + "Received response: " + JSON.stringify(message) + "\n\n";
 };
 
 var bus = Bus.initialize(function (config) {

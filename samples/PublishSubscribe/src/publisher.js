@@ -1,17 +1,22 @@
+var el = document.getElementById('results');
 
 var publishMessages = function () {
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "Publishing Message 1" + "\n\n";
+    el.value = el.value + "Publishing Message 1" + "\n\n";
 
-    bus.publish("Message1", {
-        data: "Message 1: Send"
+    bus.publish({
+        routingKey: "Message1",
+        message: {
+            data: "Message 1: Send"
+        }
     });
 
-    document.getElementById('results').value = document.getElementById('results').value + 
-                                           "Publishing Message 2" + "\n\n";
+    el.value = el.value + "Publishing Message 2" + "\n\n";
 
-    bus.publish("Message2", {
-        data: "Message 2: Send"
+    bus.publish({
+        routingKey: "Message2",
+        message: {
+            data: "Message 2: Send"
+        }
     });
 };
 
