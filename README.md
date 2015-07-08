@@ -20,6 +20,10 @@ All examples and sample projects have been tested on RabbitMQ.
 * Auditing
 * Exception Handling
 
+## Installation
+
+bower install r.messagebus --save-dev
+
 ## Simple example
 
 In this example we simply send a message from one endpoint and consume the same message on another endpoint.  The sender and receiver can be in different browser sessions.
