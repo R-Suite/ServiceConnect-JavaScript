@@ -15,6 +15,7 @@
 
         var ws = new SockJS(options.url);
         var client = Stomp.over(ws);
+        client.debug = null;
 
         var onConnectError = function() {
             console.error("Connection failed.");
@@ -36,7 +37,7 @@
         var processMessage = function(m) {
             var message = JSON.parse(m.body);
             var headers = m.headers;
-            headers.TimeReceived = Date.now;
+            headers.TimeReceived = Date.now();
             headers.DestinationMachine = "Browser";
             headers.DestinationAddress = configuration.queue;
 
@@ -46,7 +47,7 @@
                 routingKey: headers.FullTypeName
             });
 
-            headers.TimeProcessed = Date.now;
+            headers.TimeProcessed = Date.now();
 
             if (result.success) {
                 if (configuration.auditingEnabled) {
@@ -57,7 +58,7 @@
                     var exceptionString = result.exception.constructor === Object || result.exception === Array ? JSON.stringify(result.exception) : result.exception;
 
                     headers.Exception = JSON.stringify({
-                        TimeStamp: Date.now,
+                        TimeStamp: Date.now(),
                         ExceptionType: "JavaScript",
                         Message: exceptionString,
                         StackTrace: "",

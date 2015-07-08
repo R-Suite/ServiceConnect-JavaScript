@@ -1,0 +1,33 @@
+{
+  "name": "R.MessageBus",
+  "version": "0.0.0",
+  "homepage": "h",
+  "authors": [
+    "twatson83 <tswatson123@gmail.com>"
+  ],
+  "description": "MessageBus implementation using web stomp protocal",
+  "main": "",
+  "keywords": [
+    "RabbitMQ",
+    "Messaging",
+    "Bus",
+    "R.MessageBus",
+    "MessageBus",
+    "Stomp",
+    "Web-Stomp",
+    "WebStomp",
+    "Messaging"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "stomp-websocket": "~2.3.4",
+    "sockjs": "~0.3.4",
+    "sinonjs": "~1.14.1"
+  }
+}

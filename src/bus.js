@@ -302,7 +302,8 @@
                 publish: publish,
                 sendRequest: sendRequest,
                 publishRequest: publishRequest,
-                destroy: destroy
+                destroy: destroy,
+                options: options
             };
         };
 

@@ -15,6 +15,7 @@
 
         var ws = new SockJS(options.url);
         var client = Stomp.over(ws);
+        client.debug = null;
 
         var onConnectError = function() {
             console.error("Connection failed.");
@@ -49,7 +50,7 @@
             }
 
             headers.SourceAddress = configuration.queue;
-            headers.TimeSent = Date.now;
+            headers.TimeSent = Date.now();
             headers.SourceMachine = "Browser";
             headers.FullTypeName = type;
             headers.ConsumerType = "RabbitMQ";
@@ -78,7 +79,7 @@
         var send = function(args) {
             var endpoints = args.endpoints || configuration.queueMappings[args.routingKey];
 
-            for (var i = 0; i <= endpoints.length; i++) {
+            for (var i = 0; i < endpoints.length; i++) {
                 var headers = getHeaders(args.routingKey, args.headers, endpoints[i], "Send");
                 client.send('/amq/queue/' + endpoints[i], headers, JSON.stringify(args.message));
             }
