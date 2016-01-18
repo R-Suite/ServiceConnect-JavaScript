@@ -1,5 +1,5 @@
 {
-  "name": "R.MessageBus",
+  "name": "ServiceConnect",
   "version": "0.0.1",
   "homepage": "h",
   "authors": [
@@ -16,7 +16,9 @@
     "Stomp",
     "Web-Stomp",
     "WebStomp",
-    "Messaging"
+    "Messaging",
+    "ServiceConnect",
+    "Service"
   ],
   "ignore": [
     "**/.*",

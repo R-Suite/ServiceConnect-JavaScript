@@ -1,6 +1,6 @@
-# R.MessageBus JavaScript
+# ServiceConnect JavaScript
 
-[![Join the chat at https://gitter.im/R-Suite/R.MessageBus-JavaScript](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/R-Suite/R.MessageBus-JavaScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)   [![bitHound Score](https://www.bithound.io/github/R-Suite/R.MessageBus-JavaScript/badges/score.svg)](https://www.bithound.io/github/R-Suite/R.MessageBus-JavaScript)
+[![Join the chat at https://gitter.im/R-Suite/ServiceConnect-JavaScript](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/R-Suite/ServiceConnect-JavaScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)   [![bitHound Score](https://www.bithound.io/github/R-Suite/ServiceConnect-JavaScript/badges/score.svg)](https://www.bithound.io/github/R-Suite/ServiceConnect-JavaScript)
 
 A simple, easy to use messaging framework for client side JavaScript.  
 
@@ -22,7 +22,7 @@ All examples and sample projects have been tested on RabbitMQ.
 
 ## Installation
 
-bower install r.messagebus --save-dev
+bower install serviceconnect --save-dev
 
 ## Simple example
 
@@ -30,14 +30,14 @@ In this example we simply send a message from one endpoint and consume the same 
 
 ##### 1. Configure the sender bus instance
 
-Calling ```initialize``` creates an instance of the bus and connects to the queue ```rmessagebus.stomp.pointtopoint.sender``` on the server ```http://localhost:15674/stomp```.  ```queueMappings``` defines were to send messages to and uses the format ```{ routingKey: [endpoint1, endpoint2 ]}```.  The ```onConnect``` callback is called once the bus has connected to the messaging server.
+Calling ```initialize``` creates an instance of the bus and connects to the queue ```serviceconnect.stomp.pointtopoint.sender``` on the server ```http://localhost:15674/stomp```.  ```queueMappings``` defines were to send messages to and uses the format ```{ routingKey: [endpoint1, endpoint2 ]}```.  The ```onConnect``` callback is called once the bus has connected to the messaging server.
 
 ``` javascript
 var bus = Bus.initialize(function (config) {
-    config.queue = "rmessagebus.stomp.pointtopoint.sender";
+    config.queue = "serviceconnect.stomp.pointtopoint.sender";
     config.url = "http://localhost:15674/stomp";  
     config.queueMappings = {  
-        "Message1": ["rmessagebus.stomp.pointtopoint.consumer",]
+        "Message1": ["serviceconnect.stomp.pointtopoint.consumer",]
     };
     config.onConnect = sendMessages;
 });
@@ -62,7 +62,7 @@ Again, we configure an instance of the bus. This time, however we specify a mess
 
 ```javascript
 var bus = Bus.initialize(function (config) {
-    config.queue = "rmessagebus.stomp.pointtopoint.consumer";
+    config.queue = "serviceconnect.stomp.pointtopoint.consumer";
     config.url = "http://localhost:15674/stomp";
 
     config.handlers = {

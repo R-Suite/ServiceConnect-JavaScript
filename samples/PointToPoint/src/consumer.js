@@ -10,7 +10,7 @@ var message2Handler = function(message, context) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.pointtopoint.consumer";
+    config.queue = "serviceconnect.stomp.pointtopoint.consumer";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 
     config.handlers = {

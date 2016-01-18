@@ -3,9 +3,9 @@ var el = document.getElementById('results');
 var sendMessages = function() {
 
     var route = [
-        "rmessagebus.stomp.routingslip.consumer1",
-        "rmessagebus.stomp.routingslip.consumer2",
-        "rmessagebus.stomp.routingslip.publisher"
+        "serviceconnect.stomp.routingslip.consumer1",
+        "serviceconnect.stomp.routingslip.consumer2",
+        "serviceconnect.stomp.routingslip.publisher"
     ];
 
     el.value = el.value + "Sending using routing slip pattern" + "\n\n";
@@ -24,7 +24,7 @@ var message1Handler = function(message, context) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.routingslip.publisher";
+    config.queue = "serviceconnect.stomp.routingslip.publisher";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
     config.onConnect = sendMessages;
     config.handlers = {

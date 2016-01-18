@@ -3,8 +3,8 @@ var el = document.getElementById('results');
 var sendMessages = function() {
 
     var recipientList = [
-        "rmessagebus.stomp.recipientlist.consumer1",
-        "rmessagebus.stomp.recipientlist.consumer2"
+        "serviceconnect.stomp.recipientlist.consumer1",
+        "serviceconnect.stomp.recipientlist.consumer2"
     ];
 
     el.value = el.value + "Sending using recipient list pattern" + "\n\n";
@@ -46,7 +46,7 @@ var responseHandler = function(message) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.recipientlist.publisher";
+    config.queue = "serviceconnect.stomp.recipientlist.publisher";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
     config.onConnect = sendMessages;
 });

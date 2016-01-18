@@ -21,7 +21,7 @@ var publishMessages = function() {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.publishsubscribe.publisher";
+    config.queue = "serviceconnect.stomp.publishsubscribe.publisher";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
     config.onConnect = publishMessages;
 });

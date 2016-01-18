@@ -24,7 +24,7 @@ var message2Handler = function(message, context) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.scattergather.consumer1";
+    config.queue = "serviceconnect.stomp.scattergather.consumer1";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 
     config.messageTypes = ["Message1", "Message2"];

@@ -13,7 +13,7 @@
 
         var buildOptions = function() {
             return {
-                queue: "r.messagebus.stomp",
+                queue: "serviceconnect.stomp",
                 errorQueue: "errors",
                 auditQueue: "audit",
                 auditingEnabled: false,

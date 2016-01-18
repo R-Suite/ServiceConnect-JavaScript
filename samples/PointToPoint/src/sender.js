@@ -14,7 +14,7 @@ var sendMessages = function() {
     el.value = el.value + "Sending Message 2" + "\n\n";
 
     bus.send({
-        endpoints: ["rmessagebus.stomp.pointtopoint.consumer"],
+        endpoints: ["serviceconnect.stomp.pointtopoint.consumer"],
         routingKey: "Message2",
         message: {
             data: "Message 2: Send"
@@ -23,11 +23,11 @@ var sendMessages = function() {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.pointtopoint.sender";
+    config.queue = "serviceconnect.stomp.pointtopoint.sender";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
 
     config.queueMappings = { // Destination to send messages to.  
-        "Message1": ["rmessagebus.stomp.pointtopoint.consumer", ]
+        "Message1": ["serviceconnect.stomp.pointtopoint.consumer", ]
     };
 
     config.onConnect = sendMessages;

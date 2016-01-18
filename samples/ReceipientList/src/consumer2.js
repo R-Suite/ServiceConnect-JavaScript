@@ -17,7 +17,7 @@ var message2Handler = function(message, context) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.recipientlist.consumer2";
+    config.queue = "serviceconnect.stomp.recipientlist.consumer2";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using "rabbitmq-plugins enable rabbitmq_stomp"
 
     config.handlers = {

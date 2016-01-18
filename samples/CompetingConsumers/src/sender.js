@@ -22,11 +22,11 @@ var sendMessages = function() {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.competingconsumers.sender";
+    config.queue = "serviceconnect.stomp.competingconsumers.sender";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
 
     config.queueMappings = { // Destination to send messages to.  
-        "Message1": ["rmessagebus.stomp.competingconsumers.consumer"],
+        "Message1": ["serviceconnect.stomp.competingconsumers.consumer"],
     };
 
     config.onConnect = sendMessages;

@@ -31,7 +31,7 @@ var responseHandler = function(message) {
 };
 
 var bus = Bus.initialize(function(config) {
-    config.queue = "rmessagebus.stomp.scattergather.publisher";
+    config.queue = "serviceconnect.stomp.scattergather.publisher";
     config.url = "http://localhost:15674/stomp"; // Enable stomp adapter using rabbitmq-plugins enable rabbitmq_stomp
     config.onConnect = sendMessages;
 });
